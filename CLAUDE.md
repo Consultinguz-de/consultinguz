@@ -13,7 +13,8 @@ the full pipeline: candidate selection → interview → documentation → visa 
 - **Type:** Bilingual (DE / UZ) marketing site with a contact / consultation funnel.
 - **Primary audience:** German employers (Arbeitgeber) and Uzbek jobseekers (Arbeitssuchende).
 - **Default language:** `de` (Deutsch). Switchable to `uz` via a navbar toggle (persisted to `localStorage`).
-- **Hosted on:** Vercel (`https://consultinguz.vercel.app` is the fallback `metadataBase`).
+- **Hosted on:** Railway, auto-deploying `main`. The canonical origin is
+  `https://www.consultinguz.de` (`SITE_URL` in `src/data/index.ts`).
 - **Lead capture:** Contact form & consultation modal POST to `/api/contact`, which forwards to a
   Telegram chat via the Telegram Bot API.
 
@@ -61,7 +62,7 @@ src/
 │   ├── shared.tsx                # translated sections reused across pages: Stats, Founder, CtaBand, ConsultButton, SkipLink
 │   ├── ContactForm.tsx           # the one lead form (full + compact for the modal)
 │   ├── LegalPage.tsx, Navbar.tsx, Footer.tsx, AnalyticsGate.tsx
-├── lib/utils.ts                  # cn()
+├── lib/utils.ts, lib/seo.ts      # cn(), pageMeta()
 └── data/index.ts                 # COMPANY, SOCIALS, STATS — single source of company facts
 public/
 ├── images/                       # CC0 photos from Wikimedia Commons (rendered grayscale)
@@ -101,7 +102,6 @@ npm run format:check   # prettier --check .
 
 | Var                     | Used in                            | Purpose                                     |
 | ----------------------- | ---------------------------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`  | `layout.tsx`, `sitemap.ts`, `robots.ts` | Canonical base URL (falls back to Vercel domain). |
 | `TELEGRAM_BOT_TOKEN`    | `api/contact/route.ts`             | Bot used to deliver contact-form leads.     |
 | `TELEGRAM_CHAT_ID`      | `api/contact/route.ts`             | Destination chat for leads.                 |
 
@@ -131,8 +131,8 @@ dropped in production if the bot is misconfigured. **Do not ship without verifyi
 ### File / component conventions
 
 - **Server components by default.** `"use client"` only for hooks, events or context.
-- **Page → Client split.** `app/<route>/page.tsx` exports `metadata` (German, with
-  `alternates.canonical`) and renders a sibling `*Content.tsx` / `*Client.tsx`.
+- **Page → Client split.** `app/<route>/page.tsx` exports `metadata` (German, via `pageMeta()`)
+  and renders a sibling `*Content.tsx` / `*Client.tsx`.
 - **Path imports** use `@/`. **Class merging** goes through `cn()`.
 - shadcn/ui is configured in [components.json](components.json), but the primitives in
   `src/components/ui/` are restyled for this design system — restyle anything you add.
@@ -153,6 +153,16 @@ dropped in production if the bot is misconfigured. **Do not ship without verifyi
 
 - Phone, email, address, owner and social links come from [src/data/index.ts](src/data/index.ts).
   The JSON-LD block, footer, contact page and legal pages all read from it.
+- `SITE_URL` (same file) is the one canonical origin, with `www`. It is a constant, not an env
+  var: canonical tags, `og:url`, the share image URL, the sitemap and robots all derive from it,
+  and a wrong value silently breaks link previews and indexing.
+- Every `page.tsx` builds its metadata with `pageMeta()` from [src/lib/seo.ts](src/lib/seo.ts).
+  Next.js does not merge `openGraph` / `twitter` with the layout, so a hand-written `metadata`
+  object would share the home page's title and URL.
+- The share image is the static [public/og-image.png](public/og-image.png)
+  (1200×630). To change it, edit [docs/og-image.html](docs/og-image.html) and re-render it with
+  headless Chrome (`--screenshot --window-size=1200,630`).
+- The root layout emits `WebSite` + `EmploymentAgency` JSON-LD.
 - `sitemap.ts` is the source of truth for indexable routes.
 
 ### Lead capture / API

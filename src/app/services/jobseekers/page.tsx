@@ -1,11 +1,12 @@
 import JobseekersContent from "./JobseekersContent";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Für Arbeitssuchende",
   description:
     "Arbeiten in Deutschland: geprüfte Stellen, Deutschkurs und Begleitung bei Visum, Reise und Ankunft – in sechs Schritten bis zum Arbeitsbeginn.",
-  alternates: { canonical: "/services/jobseekers" },
-};
+  path: "/services/jobseekers",
+});
 
 export default function Page() {
   return <JobseekersContent />;

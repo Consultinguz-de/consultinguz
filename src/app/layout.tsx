@@ -6,7 +6,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnalyticsGate from "@/components/AnalyticsGate";
 import { SkipLink } from "@/components/shared";
-import { COMPANY, SOCIALS } from "@/data";
+import { COMPANY, SITE_URL, SOCIALS } from "@/data";
+import { pageMeta } from "@/lib/seo";
 
 // One variable family: the width axis gives the condensed headline face.
 const archivo = Archivo({
@@ -16,56 +17,69 @@ const archivo = Archivo({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://consultinguz.vercel.app";
 const DESCRIPTION =
   "Internationale Personalvermittlung: qualifizierte Fachkräfte und Auszubildende aus Usbekistan für Unternehmen in Deutschland – Auswahl, Sprachausbildung, Visum und Integration aus einer Hand.";
-const OG_IMAGE = { url: "/consulting-logo.png", width: 500, height: 500, alt: COMPANY.name };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: COMPANY.name,
+  ...pageMeta({
+    title: "ConsultingUZ — Fachkräfte aus Usbekistan für Deutschland",
+    description: DESCRIPTION,
+    path: "/",
+  }),
   title: {
     default: "ConsultingUZ — Fachkräfte aus Usbekistan für Deutschland",
     template: "%s — ConsultingUZ",
   },
-  description: DESCRIPTION,
-  alternates: { canonical: "/" },
   icons: { icon: "/favicon.png", shortcut: "/favicon.png", apple: "/favicon.png" },
-  openGraph: {
-    title: COMPANY.name,
-    description: DESCRIPTION,
-    type: "website",
-    url: "/",
-    siteName: COMPANY.name,
-    locale: "de_DE",
-    images: [OG_IMAGE],
-  },
-  twitter: {
-    card: "summary",
-    title: COMPANY.name,
-    description: DESCRIPTION,
-    images: [OG_IMAGE.url],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { "max-image-preview": "large", "max-snippet": -1 },
   },
 };
 
+const ORGANIZATION_ID = `${SITE_URL}/#organization`;
+
+// WebSite tells Google the site name shown in results (and the spellings people
+// search for); EmploymentAgency feeds the business details and knowledge panel.
 const JSON_LD = {
   "@context": "https://schema.org",
-  "@type": "EmploymentAgency",
-  name: COMPANY.name,
-  url: SITE_URL,
-  logo: `${SITE_URL}/consulting-logo.png`,
-  description: DESCRIPTION,
-  founder: { "@type": "Person", name: COMPANY.owner },
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: COMPANY.street,
-    addressLocality: COMPANY.city,
-    postalCode: COMPANY.postalCode,
-    addressCountry: "DE",
-  },
-  telephone: COMPANY.phone,
-  email: COMPANY.email,
-  areaServed: ["DE", "UZ"],
-  sameAs: SOCIALS.map((social) => social.href),
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: COMPANY.name,
+      alternateName: ["Consulting UZ", "consultinguz", "consultinguz.de"],
+      inLanguage: ["de", "uz"],
+      publisher: { "@id": ORGANIZATION_ID },
+    },
+    {
+      "@type": "EmploymentAgency",
+      "@id": ORGANIZATION_ID,
+      name: COMPANY.name,
+      alternateName: "Consulting UZ",
+      url: SITE_URL,
+      logo: `${SITE_URL}/consulting-logo.png`,
+      image: `${SITE_URL}/og-image.png`,
+      description: DESCRIPTION,
+      founder: { "@type": "Person", name: COMPANY.owner },
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: COMPANY.street,
+        addressLocality: COMPANY.city,
+        postalCode: COMPANY.postalCode,
+        addressCountry: "DE",
+      },
+      telephone: COMPANY.phone,
+      email: COMPANY.email,
+      areaServed: ["DE", "UZ"],
+      openingHours: "Mo-Fr 09:00-18:00",
+      sameAs: SOCIALS.map((social) => social.href),
+    },
+  ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

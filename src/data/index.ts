@@ -1,5 +1,9 @@
 // Single source of truth for company facts. Used by the JSON-LD block, the
 // contact page, the footer and the legal pages — change them here only.
+// The only production origin. The bare domain (no www) just redirects here, so
+// canonical URLs, the sitemap and share images must all use this host.
+export const SITE_URL = "https://www.consultinguz.de";
+
 export const COMPANY = {
   name: "ConsultingUZ",
   owner: "Orif Akhmadaliev",

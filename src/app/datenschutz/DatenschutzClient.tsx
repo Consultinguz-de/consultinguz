@@ -1,217 +1,52 @@
 "use client";
 
-import type React from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import {
-  ShieldCheck,
-  Building2,
-  MapPin,
-  Mail,
-  Phone,
-  ServerCog,
-  MessageSquare,
-  UserRoundCheck,
-  Cookie,
-  Lock,
-} from "lucide-react";
-import { Section } from "@/components/ui/section";
-import { useI18n } from "@/components/providers/translation-provider";
+import LegalPage from "@/components/LegalPage";
 import { useCookieConsent } from "@/components/providers/cookie-consent-provider";
-
-const COMPANY_OWNER = "Orif Akhmadaliev";
-const COMPANY_NAME = "ConsultingUZ";
-const COMPANY_ADDRESS = "Alemannenweg 6, 72488 Sigmaringen, Deutschland";
-const COMPANY_EMAIL = "orif.ahmadaliyev@consultinguz.de";
-const COMPANY_PHONE = "+49 176 238 97 113";
-
-const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
-const HERO_TRANSITION = { duration: 0.9, ease: EASE_OUT_EXPO };
-const PILLS_TRANSITION = { duration: 0.6, delay: 0.2, ease: EASE_OUT_EXPO };
+import { useI18n } from "@/components/providers/translation-provider";
 
 export default function DatenschutzClient() {
   const { lang } = useI18n();
-  const { openModal: openCookieModal } = useCookieConsent();
+  const { openModal } = useCookieConsent();
   const c = lang === "de" ? DE : UZ;
 
-  const topics: Array<{
-    icon: React.ComponentType<{ className?: string }>;
-    title: string;
-    body: string;
-    action?: React.ReactNode;
-  }> = [
-      { icon: ShieldCheck, title: c.intro_title, body: c.intro_body },
-      { icon: ServerCog, title: c.collection_title, body: c.collection_body },
-      { icon: MessageSquare, title: c.contact_form_title, body: c.contact_form_body },
-      { icon: UserRoundCheck, title: c.rights_title, body: c.rights_body },
-      {
-        icon: Cookie,
-        title: c.cookies_title,
-        body: c.cookies_body,
-        action: (
-          <button
-            type="button"
-            onClick={openCookieModal}
-            className="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
-          >
-            {c.cookies_adjust}
-          </button>
-        ),
-      },
-    ];
-
-  const heroPills: Array<{
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-  }> = [
-      { icon: ShieldCheck, label: c.pill_dsgvo },
-      { icon: Lock, label: c.pill_secure },
-    ];
-
   return (
-    <div className="min-h-screen bg-background">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/sections/compliance.jpg"
-            alt="Datenschutz backdrop"
-            fill
-            priority
-            className="pointer-events-none object-cover"
-          />
-          <div className="absolute inset-0 bg-slate-950/30" />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-slate-950/55" />
-        </div>
-        <div className="relative max-w-7xl mx-auto w-full px-4 py-24 sm:px-6 lg:px-8 lg:py-28">
-          <motion.div
-            className="max-w-3xl space-y-8"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={HERO_TRANSITION}
-          >
-
-            <div className="space-y-4">
-              <h1 className="text-balance text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent drop-shadow-sm">
-                {c.title}
-              </h1>
-              <p className="text-balance text-lg sm:text-xl leading-relaxed text-white/85 max-w-3xl">
-                {c.subtitle}
-              </p>
-              <p className="text-sm text-white/60">{c.updated}</p>
-            </div>
-            <motion.div
-              className="flex flex-wrap gap-2"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={PILLS_TRANSITION}
-            >
-              {heroPills.map(({ icon: Icon, label }) => (
-                <span
-                  key={label}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur"
-                >
-                  <Icon className="size-4" />
-                  <span>{label}</span>
-                </span>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      <Section>
-        <div className="grid gap-8 lg:grid-cols-5 lg:gap-10">
-          <aside className="lg:col-span-2">
-            <div className="rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-24">
-              <div className="flex items-center gap-3 mb-5">
-                <span className="inline-flex items-center justify-center rounded-md bg-primary/10 text-primary size-9">
-                  <Building2 className="size-5" />
-                </span>
-                <h2 className="text-lg font-semibold">{c.responsible_title}</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mb-5">{c.responsible_intro}</p>
-              <ul className="space-y-4">
-                <InfoRow icon={Building2} label={c.label_company}>
-                  <span className="flex flex-col">
-                    <span>{COMPANY_OWNER}</span>
-                    <span>{COMPANY_NAME}</span>
-                  </span>
-                </InfoRow>
-                <InfoRow icon={MapPin} label={c.label_address}>
-                  <span>{COMPANY_ADDRESS}</span>
-                </InfoRow>
-                <InfoRow icon={Mail} label={c.label_email}>
-                  <a href={`mailto:${COMPANY_EMAIL}`} className="hover:underline break-all">
-                    {COMPANY_EMAIL}
-                  </a>
-                </InfoRow>
-                <InfoRow icon={Phone} label={c.label_phone}>
-                  <a
-                    href={`tel:${COMPANY_PHONE.replace(/\s/g, "")}`}
-                    className="hover:underline"
-                  >
-                    {COMPANY_PHONE}
-                  </a>
-                </InfoRow>
-              </ul>
-            </div>
-          </aside>
-
-          <div className="lg:col-span-3 space-y-4">
-            {topics.map(({ icon: Icon, title, body, action }) => (
-              <article
-                key={title}
-                className="rounded-2xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/30"
+    <LegalPage
+      kicker={`${c.eyebrow} · ${c.updated}`}
+      title={c.title}
+      lead={c.subtitle}
+      cardTitle={c.responsible_title}
+      cardIntro={c.responsible_intro}
+      labels={c}
+      disclaimer={c.disclaimer}
+      topics={[
+        { title: c.intro_title, body: c.intro_body },
+        { title: c.collection_title, body: c.collection_body },
+        { title: c.contact_form_title, body: c.contact_form_body },
+        { title: c.rights_title, body: c.rights_body },
+        {
+          title: c.cookies_title,
+          body: (
+            <>
+              <p>{c.cookies_body}</p>
+              <button
+                type="button"
+                onClick={openModal}
+                className="label mt-4 border-b border-current pb-1 text-foreground"
               >
-                <div className="flex items-start gap-4">
-                  <span className="shrink-0 inline-flex items-center justify-center rounded-md bg-primary/10 text-primary size-10">
-                    <Icon className="size-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className="text-base font-semibold mb-2">{title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-                    {action}
-                  </div>
-                </div>
-              </article>
-            ))}
-
-            <p className="text-xs text-muted-foreground pt-2">{c.disclaimer}</p>
-          </div>
-        </div>
-      </Section>
-    </div>
+                {c.cookies_adjust}
+              </button>
+            </>
+          ),
+        },
+      ]}
+    />
   );
 }
 
-function InfoRow({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className="mt-0.5 rounded-md bg-primary/10 p-2 text-primary">
-        <Icon className="size-4" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-        <div className="text-sm font-medium break-words">{children}</div>
-      </div>
-    </li>
-  );
-}
-
+// Long-form legal copy stays local to the page instead of the central dictionary.
 const DE = {
   eyebrow: "Datenschutz",
-  pill_dsgvo: "DSGVO-konform",
-  pill_secure: "Sicher gespeichert",
-  pill_transparent: "Transparent",
-  title: "Datenschutzerklärung",
+  title: "Datenschutz\u00ADerklärung",
   subtitle:
     "Wir nehmen den Schutz Ihrer personenbezogenen Daten sehr ernst. Nachfolgend informieren wir Sie über die Erhebung und Verwendung personenbezogener Daten bei der Nutzung unserer Website.",
   updated: "Stand: April 2026",
@@ -243,9 +78,6 @@ const DE = {
 
 const UZ = {
   eyebrow: "Maxfiylik",
-  pill_dsgvo: "DSGVO talablariga mos",
-  pill_secure: "Xavfsiz saqlanadi",
-  pill_transparent: "Shaffof",
   title: "Maxfiylik siyosati",
   subtitle:
     "Shaxsiy ma'lumotlaringiz himoyasiga juda jiddiy yondashamiz. Quyida saytimizdan foydalanish chog'ida shaxsiy ma'lumotlarni yig'ish va undan foydalanish haqida ma'lumot beramiz.",

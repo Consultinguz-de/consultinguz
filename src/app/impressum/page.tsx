@@ -4,6 +4,7 @@ export const metadata = {
   title: "Impressum",
   description:
     "Impressum von ConsultingUZ — Angaben gemäß § 5 TMG: Anschrift, Vertretung und Verantwortliche.",
+  alternates: { canonical: "/impressum" },
 };
 
 export default function ImpressumPage() {

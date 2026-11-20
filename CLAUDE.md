@@ -26,9 +26,8 @@ the full pipeline: candidate selection → interview → documentation → visa 
 | Framework        | **Next.js 15** (App Router, `--turbopack` for dev & build)             |
 | Runtime          | **React 19** + **TypeScript 5** (strict)                               |
 | Styling          | **Tailwind CSS v4** (`@import "tailwindcss"`, `@theme inline` tokens)  |
-| UI primitives    | **shadcn/ui** (style: `new-york`, baseColor: `neutral`) on Radix UI    |
+| UI primitives    | Radix UI primitives, restyled (shadcn/ui config kept)                  |
 | Icons            | **lucide-react**                                                       |
-| Animation        | **framer-motion** v12                                                  |
 | Analytics        | **@vercel/analytics** (gated behind cookie consent via `AnalyticsGate`) |
 | Cookie consent   | Custom provider + shadcn Dialog/Checkbox (`cookie-consent-provider`)   |
 | Lint / Format    | ESLint (`next/core-web-vitals` + `next/typescript` + `prettier`), Prettier |
@@ -43,65 +42,47 @@ live in [src/app/globals.css](src/app/globals.css) under `@theme inline { … }`
 
 ```
 src/
-├── app/                          # Next.js App Router
-│   ├── layout.tsx                # Root layout: fonts, Providers, Navbar, CTASticky, Footer, JSON-LD
-│   ├── page.tsx                  # Home: Hero → Stats → FounderCard → ResultsMarquee → ProcessSection → FinalCTA
-│   ├── providers.tsx             # Client-side <Providers/> wrapper (Consultation + Translation)
-│   ├── globals.css               # Tailwind v4 entry + @theme tokens + CSS variables
-│   ├── robots.ts                 # MetadataRoute.Robots
-│   ├── sitemap.ts                # MetadataRoute.Sitemap (lists every public route)
+├── app/
+│   ├── layout.tsx                # Archivo font, Providers, SkipLink, Navbar, Footer, JSON-LD
+│   ├── page.tsx + HomeContent.tsx
+│   ├── providers.tsx             # Translation → CookieConsent → Consultation
+│   ├── globals.css               # Tailwind v4 entry, tokens, @utility helpers
+│   ├── robots.ts, sitemap.ts, not-found.tsx + NotFoundContent.tsx
 │   ├── api/contact/route.ts      # POST handler → Telegram bot (lead capture)
-│   ├── about/
-│   │   ├── mission/              # /about/mission   (real content, MissionContent.tsx)
-│   │   └── team/                 # /about/team      (ComingSoon placeholder)
-│   ├── services/
-│   │   ├── employers/            # /services/employers  (EmployersSegment)
-│   │   ├── jobseekers/           # /services/jobseekers (JobseekersSegment)
-│   │   ├── partners/             # /services/partners   (ComingSoon placeholder)
-│   │   └── process/              # /services/process    (ProcessHero + Process)
-│   ├── compliance/page.tsx       # /compliance     (static, UZ copy)
-│   ├── datenschutz/              # /datenschutz    (DSGVO privacy notice, DE+UZ via i18n)
-│   └── contact/                  # /contact        (full form + office info)
+│   ├── about/mission/            # /about/mission  ("Über uns", has #compliance)
+│   ├── services/employers/       # /services/employers (has #prozess)
+│   ├── services/jobseekers/      # /services/jobseekers
+│   ├── contact/                  # /contact
+│   └── datenschutz/, impressum/  # legal pages, share components/LegalPage.tsx
 ├── components/
-│   ├── ui/                       # shadcn/ui primitives (button, card, dialog, sheet, input, …)
-│   ├── providers/
-│   │   ├── translation-provider.tsx     # i18n context, MESSAGES dict, useI18n()
-│   │   ├── consultation-provider.tsx    # Global "Bepul maslahat" modal, useConsultation()
-│   │   └── cookie-consent-provider.tsx  # GDPR/TTDSG consent modal, useCookieConsent()
-│   ├── AnalyticsGate.tsx           # Renders <Analytics /> only when consent.functional === true
-│   ├── Navbar.tsx, Footer.tsx, CTASticky.tsx
-│   ├── Hero.tsx, Stats.tsx, FounderCard.tsx, ProcessSection.tsx, Process.tsx
-│   ├── ResultsMarquee.tsx, PartnersMarquee.tsx
-│   ├── EmployersSegment.tsx, JobseekersSegment.tsx
-│   ├── ForEmployers.tsx, ForJobseekers.tsx, AboutBrief.tsx, FinalCTA.tsx
-│   └── ComingSoon.tsx
-├── lib/
-│   ├── utils.ts                  # cn() — twMerge(clsx(...))
-│   └── reveal.tsx                # useReveal() — IntersectionObserver hook
-└── data/
-    └── index.ts                  # stats, partners, testimonials (typed as readonly tuples)
+│   ├── ui/                       # button, input (+fieldClass), label, dialog, checkbox
+│   ├── providers/                # translation, consultation, cookie-consent
+│   ├── blocks.tsx                # presentational: PageHero, Section, Cells, Rows, List, ArrowLink, Marked, pairs()
+│   ├── shared.tsx                # translated sections reused across pages: Stats, Founder, CtaBand, ConsultButton, SkipLink
+│   ├── ContactForm.tsx           # the one lead form (full + compact for the modal)
+│   ├── LegalPage.tsx, Navbar.tsx, Footer.tsx, AnalyticsGate.tsx
+├── lib/utils.ts                  # cn()
+└── data/index.ts                 # COMPANY, SOCIALS, STATS — single source of company facts
 public/
-├── partners/, sections/          # brand assets used across the site
-├── consulting-logo.png, hero-bg.jpg, herr-orif.jpg, favicon.png
+├── images/                       # CC0 photos from Wikimedia Commons (rendered grayscale)
+├── consulting-logo.png, herr-orif.jpg, favicon.png
 ```
 
 ### Page inventory (matches sitemap)
 
-| Route                  | Status        | Component                                    |
-| ---------------------- | ------------- | -------------------------------------------- |
-| `/`                    | Live          | Composed in `app/page.tsx`                   |
-| `/about/mission`       | Live          | `app/about/mission/MissionContent.tsx`       |
-| `/about/team`          | Coming soon   | `<ComingSoon pageKey="nav_team" />`          |
-| `/services/employers`  | Live          | `EmployersSegment`                           |
-| `/services/jobseekers` | Live          | `JobseekersSegment`                          |
-| `/services/partners`   | Coming soon   | `<ComingSoon pageKey="nav_partners" />`      |
-| `/services/process`    | Live          | `ProcessHero` + `Process`                    |
-| `/compliance`          | Live (UZ)     | Static copy in `app/compliance/page.tsx`     |
-| `/datenschutz`         | Live (DE+UZ)  | `DatenschutzClient` (DSGVO notice)           |
-| `/impressum`           | Live (DE+UZ)  | `ImpressumClient` (§ 5 TMG imprint)          |
-| `/contact`             | Live          | `ContactClient` — form + office info         |
+| Route                  | Component                                         |
+| ---------------------- | ------------------------------------------------- |
+| `/`                    | `app/HomeContent.tsx`                             |
+| `/services/employers`  | `EmployersContent` — services, 5-step process     |
+| `/services/jobseekers` | `JobseekersContent` — offer, 6-step process       |
+| `/about/mission`       | `MissionContent` — mission, values, compliance    |
+| `/contact`             | `ContactClient` — office info + `ContactForm`     |
+| `/datenschutz`         | `DatenschutzClient` → `LegalPage`                 |
+| `/impressum`           | `ImpressumClient` → `LegalPage`                   |
 
-When adding a new route, also add it to [src/app/sitemap.ts](src/app/sitemap.ts).
+Removed routes (`/services/process`, `/compliance`, `/about/team`, `/services/partners`) are
+permanent redirects in [next.config.ts](next.config.ts). When adding a route, also add it to
+[src/app/sitemap.ts](src/app/sitemap.ts).
 
 ---
 
@@ -131,86 +112,62 @@ dropped in production if the bot is misconfigured. **Do not ship without verifyi
 
 ## 5. Conventions & Patterns
 
+### Design system ("strict grid")
+
+- **Palette:** white `--background`, black `--foreground`, off-white `--paper`, and one accent,
+  gold `--accent` (#F2B705). The blue appears only in the logo. Tokens live in
+  [src/app/globals.css](src/app/globals.css); do not add colors without adding a token.
+- **Shape:** zero border radius, 1px black rules (`border` defaults to `--foreground`), no shadows.
+- **Type:** Archivo only. `h1`–`h3` and the `display` utility are condensed (`font-stretch: 75%`),
+  weight 800, uppercase. `label` is the small uppercase caption. `mark` is the gold highlighter.
+- **Headlines** highlight a phrase by wrapping it in `*asterisks*` in the dictionary; render with
+  `<Marked>`. `h1` never auto-hyphenates — put `\u00AD` in long words (see `emp_title`).
+- **Layout:** mobile first. `container-x` is the page gutter. Compose pages from
+  [blocks.tsx](src/components/blocks.tsx): `PageHero`, then numbered `Section`s holding `Cells`
+  (item count must fill the last row), `Rows` (sequential steps) or `List` (any length).
+- **Motion:** CSS only. `reveal` is a scroll-driven fade (progressive enhancement, off for
+  reduced motion). There is no animation library.
+
 ### File / component conventions
 
-- **Server components by default.** Add `"use client"` only when the component needs hooks,
-  browser APIs, `framer-motion`, event handlers, or context (`useI18n`, `useConsultation`).
-- **Page → Client component split.** The pattern across the codebase:
-  `app/<route>/page.tsx` exports `metadata` (server) and renders a sibling `*Client.tsx` /
-  segment component that holds the interactive UI (e.g. `ContactPage` → `ContactClient`,
-  `MissionPage` → `MissionContent`). Keep this split when adding new routes — it lets us export
-  per-route metadata without disabling SSR.
-- **Path imports** use the `@/` alias (e.g. `@/components/ui/button`). Do not use deep relative
-  paths.
-- **Class merging** always goes through `cn()` from [src/lib/utils.ts](src/lib/utils.ts).
-- **Section layout** is standardised via [`<Section>` and `<SectionHeader>`](src/components/ui/section.tsx)
-  — variants `default | subtle | muted | brand`, with consistent vertical rhythm
-  (`py-12 sm:py-16 lg:py-20`) and a 7xl container. Prefer composing pages from `<Section>` rather
-  than re-implementing wrappers.
-
-### shadcn/ui
-
-- Configured in [components.json](components.json): style `new-york`, RSC enabled, icons `lucide`,
-  baseColor `neutral`, CSS variables on. Components live under [src/components/ui/](src/components/ui/).
-- Add new primitives with `npx shadcn@latest add <name>` — they will land in `src/components/ui/`.
-- The skill `shadcn/ui@shadcn` is installed in `.agents/skills/shadcn/` for automated use.
-
-### Tailwind v4
-
-- All design tokens are CSS variables defined in [src/app/globals.css](src/app/globals.css)
-  (`@theme inline`). Brand color is `--color-brand: #003399` (German federal blue) and the
-  `primary` color resolves to it.
-- Custom radii: `--radius` is `1rem`, `radius-2xl` is `1.25rem`.
-- Animations use `tw-animate-css` (already imported in `globals.css`) plus `framer-motion`.
-- The skill `tailwind-v4-shadcn` is installed for v4-specific guidance.
+- **Server components by default.** `"use client"` only for hooks, events or context.
+- **Page → Client split.** `app/<route>/page.tsx` exports `metadata` (German, with
+  `alternates.canonical`) and renders a sibling `*Content.tsx` / `*Client.tsx`.
+- **Path imports** use `@/`. **Class merging** goes through `cn()`.
+- shadcn/ui is configured in [components.json](components.json), but the primitives in
+  `src/components/ui/` are restyled for this design system — restyle anything you add.
 
 ### Internationalisation
 
-- **There is no `next-intl` or `i18n` route segment.** All translations are a static dictionary in
-  [src/components/providers/translation-provider.tsx](src/components/providers/translation-provider.tsx)
-  (`MESSAGES.uz`, `MESSAGES.de`). Components call `const { t } = useI18n();` and reference keys.
-- Default language is `de`. The user's choice is persisted to `localStorage["lang"]`.
-- **When you add user-visible copy, add both `de` and `uz` keys.** Missing keys silently fall back
-  to the key itself, which ships untranslated text to production. Keep the two language blocks in
-  sync — they share the same key names by section comment (`// Navbar`, `// Hero`, etc.).
-- A few client components (e.g. `DatenschutzClient`) use inline bilingual constants instead of
-  `useI18n()` — this is acceptable for long-form legal copy but new content should prefer the
-  central dictionary.
+- All copy is a static dictionary in
+  [translation-provider.tsx](src/components/providers/translation-provider.tsx). `de` defines the
+  key set; `uz` is typed `Record<MessageKey, string>`, so a missing key is a compile error.
+  `t()` only accepts `MessageKey`.
+- Numbered groups (`service_1_title` / `service_1_desc` …) are read with `pairs(t, "service", 7)`.
+  That call casts the key, so a wrong prefix or count renders empty text — check the page.
+- Default language is `de`; the choice is stored in `localStorage["lang"]` by `setLang`.
+- Long-form legal copy stays in page-local `DE` / `UZ` objects (`DatenschutzClient`,
+  `ImpressumClient`).
 
-### Data
+### Company data and SEO
 
-- Static facts (stats, partners, testimonials) live in [src/data/index.ts](src/data/index.ts) as
-  `as const` tuples with derived types. Treat them as design-time content, not as a CMS.
-
-### Animation
-
-- `framer-motion` is used for hero / section reveals and the marquees. The reusable
-  [`useReveal`](src/lib/reveal.tsx) hook (IntersectionObserver) is for non-Motion components that
-  need on-scroll reveals. The `framer-motion-animator` skill is installed for guidance.
-
-### SEO
-
-- Per-route `metadata` exports are required (the home / contact / datenschutz / each services route
-  already do this — keep the pattern).
-- The root layout injects an `EmploymentAgency` JSON-LD block — keep address, phone, and email
-  there in sync with the contact page (`OFFICE_PHONE`, `OFFICE_EMAIL`, `OFFICE_ADDRESS` in
-  [ContactClient.tsx](src/app/contact/ContactClient.tsx)).
-- `sitemap.ts` is the source of truth for indexable routes. Add new pages here.
+- Phone, email, address, owner and social links come from [src/data/index.ts](src/data/index.ts).
+  The JSON-LD block, footer, contact page and legal pages all read from it.
+- `sitemap.ts` is the source of truth for indexable routes.
 
 ### Lead capture / API
 
-- [src/app/api/contact/route.ts](src/app/api/contact/route.ts) is a single POST handler. It
-  validates that `name` plus at least one of `email`/`phone` is present, escapes HTML, and forwards
-  a formatted message to Telegram via `parse_mode: "HTML"`.
-- Both the consultation modal ([consultation-provider.tsx](src/components/providers/consultation-provider.tsx))
-  and the contact page ([ContactClient.tsx](src/app/contact/ContactClient.tsx)) post to the same
-  endpoint. If you change the schema, update both call sites.
+- [src/app/api/contact/route.ts](src/app/api/contact/route.ts) validates `name` plus one of
+  `email` / `phone`, escapes HTML and forwards to Telegram.
+- [ContactForm.tsx](src/components/ContactForm.tsx) is the only client. Full mode (contact page)
+  requires email and message; `compact` mode (consultation modal) requires phone. Keep new API
+  fields optional on the server.
 
 ### Accessibility
 
-- The root layout includes a "Skip to content" link and `<main role="main" id="main">`.
-- Form fields use `<Label>`, `aria-invalid`, `aria-describedby` for errors, and `aria-live`
-  regions for submit feedback. Maintain this when adding new form fields.
+- Skip link, `<main id="main">`, visible `:focus-visible` ring (`currentColor`).
+- Form fields use `<Label>`, `aria-invalid`, `aria-describedby` and an `aria-live` status region.
+- Dialogs (consultation, cookies, mobile menu) are Radix dialogs — keep titles and close labels.
 
 ---
 
@@ -226,7 +183,6 @@ this repo. Consult them when the task touches their domain:
 | `vercel-react-best-practices`          | React 19 idioms, RSC boundaries, performance.              |
 | `tailwind-v4-shadcn`                   | Tailwind v4 (`@theme`, CSS-first) + shadcn token wiring.   |
 | `typescript-advanced-types`            | Complex generics, narrowing, utility types.                |
-| `framer-motion-animator`               | Variants, scroll-triggered reveals, layout animation.      |
 | `seo`                                  | Metadata, JSON-LD, Core Web Vitals, sitemap/robots tuning. |
 
 Manage them with:
@@ -242,40 +198,24 @@ npx skills update                # upgrade
 
 ## 7. Working notes for AI agents
 
-- **Default to editing existing components.** Most page-level work is a matter of composing
-  `<Section>` blocks and the existing `Hero/Process/Final CTA/...` components — resist the urge to
-  introduce new patterns.
-- **Never break the i18n contract.** Every user-visible string should be a `t("…")` call (or, for
-  legal pages, an entry in the page-local DE/UZ object). Hard-coded German or Uzbek strings in
-  components are a bug.
-- **Respect server/client boundaries.** Do not add `"use client"` to a `page.tsx` if you can keep
-  it server-only and push interactivity into a child. Doing otherwise loses the metadata
-  hoisting pattern used everywhere else.
-- **Keep the Telegram payload backwards-compatible.** Both the modal and the full form post to
-  `/api/contact`; any new field must be optional on the server side or both clients must be
-  updated together.
-- **When adding routes, update [`src/app/sitemap.ts`](src/app/sitemap.ts).** It's the only place
-  search engines will pick them up.
-- **Brand color is `#003399`** (mapped to `--primary`). Don't introduce new accent colors without
-  adding a token to `@theme` in `globals.css`.
-- **Founder / contact data is duplicated** between the JSON-LD block in `layout.tsx` and the
-  `ContactClient` constants. Keep them in sync.
-- **`.next/` and `node_modules/`** are ignored — never commit build output. `package-lock.json` is
-  ignored by Prettier but committed by Git.
-- **Gate every new tracker behind cookie consent.** Do not add `<Script>` tags or third-party
-  analytics directly in `layout.tsx`. Follow the [`AnalyticsGate`](src/components/AnalyticsGate.tsx)
-  pattern: check `useCookieConsent()` and render only when the relevant category
-  (`functional` or `marketing`) is `true`. Bump `CURRENT_VERSION` in
+- **Compose, don't invent.** New sections should be `Section` + `Cells` / `Rows` / `List`.
+- **Never break the i18n contract.** Every user-visible string is a `t("…")` call (or a
+  page-local DE/UZ entry on legal pages). Add `de` and `uz` together.
+- **Respect server/client boundaries.** Keep `page.tsx` server-only.
+- **One accent.** Gold marks one thing per view; do not add a second accent color.
+- **Gate every new tracker behind cookie consent.** Follow
+  [`AnalyticsGate`](src/components/AnalyticsGate.tsx). Non-essential categories are opt-in
+  (unticked by default). Bump `CURRENT_VERSION` in
   [cookie-consent-provider.tsx](src/components/providers/cookie-consent-provider.tsx) if the
-  category set changes — this invalidates stored consent and re-prompts users.
+  category set changes.
+- **`.next/` and `node_modules/`** are ignored — never commit build output.
 
 ---
 
 ## 8. Known gaps / placeholders
 
-- `/about/team` and `/services/partners` render `<ComingSoon>` — real content pending.
-- `PartnersMarquee` is rendered in source but commented out on the home page (`src/app/page.tsx`).
-- The contact API silently logs and returns 200 when Telegram env vars are missing — verify
+- Impressum still lacks Handelsregister, USt-ID and Aufsichtsbehörde (see TODO in
+  `ImpressumClient.tsx`) — data pending from the client.
+- The contact API logs and returns 200 when the Telegram env vars are missing — verify
   configuration before shipping to a new environment.
-- The consultation modal uses inline UZ copy instead of `useI18n` — switch it over if the modal
-  ever needs to render in DE.
+- Page metadata is German only; the language toggle is client-side and does not change `<title>`.

@@ -1,18 +1,10 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -72,8 +64,9 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
   const [consent, setConsent] = useState<ConsentState | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [functional, setFunctional] = useState(true);
-  const [marketing, setMarketing] = useState(true);
+  // Opt-in: non-essential categories start unticked (pre-ticked boxes are not valid consent).
+  const [functional, setFunctional] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
   useEffect(() => {
     const stored = readStoredConsent();
@@ -87,20 +80,17 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     }
   }, []);
 
-  const persist = useCallback(
-    (next: { functional: boolean; marketing: boolean }) => {
-      const record: ConsentState = {
-        version: CURRENT_VERSION,
-        essential: true,
-        functional: next.functional,
-        marketing: next.marketing,
-        timestamp: Date.now(),
-      };
-      writeConsent(record);
-      setConsent(record);
-    },
-    [],
-  );
+  const persist = useCallback((next: { functional: boolean; marketing: boolean }) => {
+    const record: ConsentState = {
+      version: CURRENT_VERSION,
+      essential: true,
+      functional: next.functional,
+      marketing: next.marketing,
+      timestamp: Date.now(),
+    };
+    writeConsent(record);
+    setConsent(record);
+  }, []);
 
   const acceptAll = useCallback(() => {
     setFunctional(true);
@@ -134,25 +124,24 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       }
       setIsOpen(false);
     },
-    [consent, persist],
+    [consent, persist]
   );
 
   const value = useMemo<CookieConsentContextValue>(
     () => ({ consent, mounted, openModal }),
-    [consent, mounted, openModal],
+    [consent, mounted, openModal]
   );
 
   return (
     <CookieConsentContext.Provider value={value}>
       {children}
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="rounded-2xl p-6 sm:max-w-lg">
+        <DialogContent closeLabel={t("nav_close")}>
           <DialogHeader>
             <DialogTitle>{t("cookie_modal_title")}</DialogTitle>
             <DialogDescription>{t("cookie_modal_subtitle")}</DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-2">
+          <div className="mt-6 border-t">
             <CategoryRow
               id="cookie-essential"
               label={t("cookie_essential_label")}
@@ -166,25 +155,25 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
               label={t("cookie_functional_label")}
               description={t("cookie_functional_desc")}
               checked={functional}
-              onCheckedChange={(v) => setFunctional(v)}
+              onCheckedChange={setFunctional}
             />
             <CategoryRow
               id="cookie-marketing"
               label={t("cookie_marketing_label")}
               description={t("cookie_marketing_desc")}
               checked={marketing}
-              onCheckedChange={(v) => setMarketing(v)}
+              onCheckedChange={setMarketing}
             />
           </div>
-
-          <DialogFooter className="gap-2 sm:gap-2">
+          {/* Equal visual weight for both choices: consent must not be nudged. */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <Button type="button" variant="outline" onClick={saveCurrent}>
               {t("cookie_save_settings")}
             </Button>
-            <Button type="button" onClick={acceptAll}>
+            <Button type="button" variant="outline" onClick={acceptAll}>
               {t("cookie_accept_all")}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </CookieConsentContext.Provider>
@@ -207,7 +196,7 @@ function CategoryRow({
   onCheckedChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3 border-b py-4">
       <Checkbox
         id={id}
         checked={checked}
@@ -216,10 +205,10 @@ function CategoryRow({
         className="mt-0.5"
       />
       <div className="min-w-0">
-        <label htmlFor={id} className="text-sm font-semibold cursor-pointer select-none">
+        <label htmlFor={id} className="label cursor-pointer select-none">
           {label}
         </label>
-        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
   );
@@ -227,7 +216,6 @@ function CategoryRow({
 
 export function useCookieConsent() {
   const ctx = useContext(CookieConsentContext);
-  if (!ctx)
-    throw new Error("useCookieConsent must be used within CookieConsentProvider");
+  if (!ctx) throw new Error("useCookieConsent must be used within CookieConsentProvider");
   return ctx;
 }

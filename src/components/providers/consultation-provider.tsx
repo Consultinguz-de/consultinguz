@@ -1,111 +1,39 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
+
+import ContactForm from "@/components/ContactForm";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useI18n } from "@/components/providers/translation-provider";
 
-type Role = "Employer" | "Job Seeker";
-
-type ConsultationContextValue = {
-  open: () => void;
-  close: () => void;
-};
+type ConsultationContextValue = { open: () => void; close: () => void };
 
 const ConsultationContext = createContext<ConsultationContextValue | null>(null);
 
 export function ConsultationProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<Role>("Employer");
 
-  const open = useCallback(() => setIsOpen(true), []);
-  const close = useCallback(() => setIsOpen(false), []);
-
-  const value = useMemo(() => ({ open, close }), [open, close]);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    try {
-      await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, role }),
-      });
-    } catch {
-      // silently fail — user still sees modal close
-    }
-    setName("");
-    setPhone("");
-    setIsOpen(false);
-  }
+  const value = useMemo(() => ({ open: () => setIsOpen(true), close: () => setIsOpen(false) }), []);
 
   return (
     <ConsultationContext.Provider value={value}>
       {children}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="rounded-2xl p-6">
+        <DialogContent closeLabel={t("nav_close")}>
           <DialogHeader>
-            <DialogTitle>Bepul maslahat</DialogTitle>
-            <DialogDescription>
-              O&apos;zingiz haqingizda qisqacha yozing, tez orada bog&apos;lanamiz.
-            </DialogDescription>
+            <DialogTitle>{t("modal_title")}</DialogTitle>
+            <DialogDescription>{t("modal_desc")}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4" aria-label="Free Consultation Form">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Ism</Label>
-              <Input
-                id="name"
-                name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                aria-required="true"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Telefon raqami</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                aria-required="true"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="role">Rol</Label>
-              <select
-                id="role"
-                name="role"
-                className="h-9 px-3 rounded-md border bg-background"
-                value={role}
-                onChange={(e) => setRole(e.target.value as Role)}
-                aria-label="Select role"
-              >
-                <option>Ish beruvchi</option>
-                <option>Ish izlovchi</option>
-              </select>
-            </div>
-            <DialogFooter>
-              <Button type="submit">
-                <Send className="size-4" />
-                <span>Yuborish</span>
-              </Button>
-            </DialogFooter>
-          </form>
+          <div className="mt-6">
+            <ContactForm compact />
+          </div>
         </DialogContent>
       </Dialog>
     </ConsultationContext.Provider>

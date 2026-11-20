@@ -1,173 +1,119 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-/* global variables */
 
+/* Design system: strict grid. White / black / one gold accent, zero radius, 1px rules. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans:
-    var(--font-source-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-serif:
-    "Google Sans Flex", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
-  /* Brand tokens */
-  --color-brand: #003399;
-  --color-brand-foreground: #ffffff;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-paper: var(--paper);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: 1.25rem; /* design system */
+  --color-destructive: var(--destructive);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 :root {
-  --radius: 1rem; /* base radius; 2xl set explicitly to 1.25rem */
   --background: #ffffff;
   --foreground: #111111;
-  --card: #ffffff;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: var(--color-brand);
-  --primary-foreground: var(--color-brand-foreground);
-  --secondary: #f5f7fb;
-  --secondary-foreground: #0f172a;
-  --muted: #f5f7fb;
-  --muted-foreground: #475569;
-  --accent: #ffc342;
-  --accent-foreground: #0b1020;
-  --destructive: #dc2626;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #93c5fd;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: var(--color-brand);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --paper: #f3f2ee;
+  --accent: #f2b705;
+  --muted-foreground: #55554f;
+  --destructive: #b3261e;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--foreground);
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
   }
   body {
-    @apply bg-background text-foreground font-sans leading-relaxed;
+    @apply bg-background text-foreground font-sans leading-relaxed antialiased;
   }
   h1,
   h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-serif font-bold tracking-tight text-balance;
+  h3 {
+    font-stretch: 75%;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    /* Long German compounds must never overflow a 320px screen. */
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+  /* Top-level headlines break only at the soft hyphens placed in the copy. */
+  h1 {
+    hyphens: manual;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+  /* currentColor keeps the ring visible on white, black and gold surfaces. */
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
   }
   a,
-  a * {
-    font-family: var(--font-serif) !important;
-  }
-  /* Improve default focus styles for accessibility */
-  :focus-visible {
-    @apply outline-2 outline-offset-2 outline-ring;
-  }
-  /* Smooth section spacing inside containers */
-  main > section > div > * + * {
-    @apply mt-6;
-  }
-  /* Global hover cursor for links and buttons */
-  a:hover,
-  button:hover,
-  [role="button"]:hover,
-  [type="button"]:hover,
-  [type="submit"]:hover,
-  [type="reset"]:hover {
+  button,
+  select,
+  summary {
     cursor: pointer;
   }
-
-  /* Disabled states shouldn't look clickable */
-  a[aria-disabled="true"],
-  button:disabled,
-  button[disabled],
-  [role="button"][aria-disabled="true"],
-  [type="button"][disabled],
-  [type="submit"][disabled],
-  [type="reset"][disabled] {
+  :disabled {
     cursor: not-allowed;
   }
-  /* Responsive media defaults */
-  img,
-  svg,
-  video,
-  canvas,
-  audio,
-  iframe,
-  embed,
-  object {
-    max-width: 100%;
-    height: auto;
+}
+
+@utility container-x {
+  @apply mx-auto w-full max-w-[88rem] px-4 sm:px-6 lg:px-10;
+}
+
+/* Small uppercase caption used for section numbers, eyebrows and form labels. */
+@utility label {
+  @apply text-xs font-semibold uppercase tracking-[0.14em];
+}
+
+/* Headline face for non-heading elements (numerals, wordmark, big links). */
+@utility display {
+  font-stretch: 75%;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+/* Highlighter mark behind a word in a headline. */
+@utility mark {
+  background: var(--accent);
+  color: var(--foreground);
+  padding: 0 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Scroll reveal without JS: progressive enhancement, off for reduced motion. */
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
   }
 }
 
-@layer utilities {
-  /* Readability helpers */
-  .text-pretty {
-    text-wrap: pretty;
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
   }
-  .text-balance {
-    text-wrap: balance;
-  }
-  /* Container helpers */
-  .container-px {
-    @apply px-4 sm:px-6 lg:px-8;
-  }
-}
-
-/* Global marquee for results/cards */
-@keyframes results_marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-33.3333%);
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

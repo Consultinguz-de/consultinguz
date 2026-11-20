@@ -1,11 +1,12 @@
 import DatenschutzClient from "./DatenschutzClient";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Datenschutz",
   description:
     "Datenschutzerklärung von ConsultingUZ — Erhebung, Verarbeitung und Schutz personenbezogener Daten.",
-  alternates: { canonical: "/datenschutz" },
-};
+  path: "/datenschutz",
+});
 
 export default function DatenschutzPage() {
   return <DatenschutzClient />;

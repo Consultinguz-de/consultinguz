@@ -5,32 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-sans text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 aria-invalid:border-destructive will-change-transform hover:-translate-y-0.5",
+  "inline-flex shrink-0 items-center justify-center gap-2 border border-foreground text-sm font-semibold uppercase tracking-[0.08em] transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20",
-        outline:
-          "border bg-background shadow-xs hover:bg-primary/10",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-primary/10",
-        link: "text-primary underline-offset-4 hover:underline",
+        default: "bg-foreground text-background hover:bg-accent hover:text-foreground",
+        outline: "bg-background text-foreground hover:bg-foreground hover:text-background",
+        accent: "bg-accent text-foreground hover:bg-foreground hover:text-background",
+        // For black surfaces.
+        invert:
+          "border-background bg-background text-foreground hover:border-accent hover:bg-accent",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-lg gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-xl px-7 has-[>svg]:px-5",
-        icon: "size-9",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        default: "min-h-11 px-5 py-2",
+        lg: "min-h-14 px-6 py-3 text-[0.9375rem]",
+        icon: "size-11",
       },
     },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    defaultVariants: { variant: "default", size: "default" },
   }
 );
 
@@ -40,12 +32,8 @@ function Button({
   size,
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+}: React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "button";
-
   return (
     <Comp
       data-slot="button"

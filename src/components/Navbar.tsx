@@ -1,246 +1,161 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import * as Dialog from "@radix-ui/react-dialog";
+import { ArrowRight, Menu, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
-  Globe,
-  Menu,
-  Phone,
-  Target,
-  Users,
-  Handshake,
-  Workflow,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetClose,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { useI18n } from "@/components/providers/translation-provider";
+import { cn } from "@/lib/utils";
+import { useConsultation } from "@/components/providers/consultation-provider";
+import { useI18n, type LanguageCode } from "@/components/providers/translation-provider";
 
-const linkBase =
-  "px-3 py-2 rounded-md text-sm font-medium focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none";
+const LINKS = [
+  { href: "/services/employers", key: "nav_employers" },
+  { href: "/services/jobseekers", key: "nav_jobseekers" },
+  { href: "/about/mission", key: "nav_about" },
+  { href: "/contact", key: "nav_contact" },
+] as const;
 
-export function Navbar() {
-  const pathname = usePathname();
-  const { t, lang, setLang } = useI18n();
+const LANGUAGES: LanguageCode[] = ["de", "uz"];
 
-  const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/");
-
-  const mainLinks: Array<{ href: string; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-    { href: "/about/mission", label: t("nav_mission"), icon: Target },
-    { href: "/about/team", label: t("nav_team"), icon: Users },
-    { href: "/services/partners", label: t("nav_partners"), icon: Handshake },
-    { href: "/services/process", label: t("nav_process"), icon: Workflow },
-    { href: "/contact", label: t("nav_contact"), icon: Phone },
-  ];
-
+function Logo({ onClick }: { onClick?: () => void }) {
+  const { t } = useI18n();
   return (
-    <header
-      className="sticky top-0 z-50 backdrop-blur bg-background/80 supports-[backdrop-filter]:bg-background/60 border-b"
-      role="banner"
+    <Link
+      href="/"
+      onClick={onClick}
+      aria-label={t("nav_home_aria")}
+      className="flex items-center gap-2.5"
     >
-      <div className="border-b border-border/60">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-9 flex items-center gap-2 sm:gap-4 text-xs overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <Link
-            href="/services/employers"
-            className={cn(
-              "rounded-md px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors",
-              isActive("/services/employers") && "text-foreground bg-primary/10"
-            )}
-          >
-            {t("nav_employers")}
-          </Link>
-          <Link
-            href="/services/jobseekers"
-            className={cn(
-              "rounded-md px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors",
-              isActive("/services/jobseekers") && "text-foreground bg-primary/10"
-            )}
-          >
-            {t("nav_jobseekers")}
-          </Link>
-        </div>
-      </div>
-
-      <nav
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
-        aria-label="Primary"
-      >
-        <Link href="/" className="inline-flex items-center" aria-label="ConsultingUZ bosh sahifa">
-          <span className="sr-only">ConsultingUZ</span>
-          <Image
-            src="/consulting-logo.png"
-            alt="ConsultingUZ logo"
-            width={32}
-            height={32}
-            priority
-          />
-          <span className="ml-2 font-bold text-lg">consultinguz</span>
-        </Link>
-
-        <div className="hidden md:flex items-center gap-1">
-          {mainLinks.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                linkBase,
-                "inline-flex items-center gap-2 whitespace-nowrap hover:bg-primary/10",
-                isActive(href) && "bg-primary/10"
-              )}
-            >
-              <Icon className="size-4" />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="hidden md:flex items-center gap-2">
-          <LanguageToggle forcedLang={lang} onChangeLang={setLang} />
-        </div>
-
-        <div className="md:hidden">
-          <MobileMenu isActive={isActive} t={t} lang={lang} onChangeLang={setLang} />
-        </div>
-      </nav>
-    </header>
+      <Image src="/consulting-logo.png" alt="" width={32} height={32} priority />
+      <span className="display text-xl tracking-normal normal-case">consultinguz</span>
+    </Link>
   );
 }
 
-export default Navbar;
-
-type LanguageCode = "uz" | "de";
-
-function LanguageToggle({
-  forcedLang,
-  onChangeLang,
-}: {
-  forcedLang?: LanguageCode;
-  onChangeLang?: (v: LanguageCode) => void;
-}) {
-  const [mounted, setMounted] = React.useState(false);
-  const [language, setLanguage] = React.useState<LanguageCode>("uz");
-
-  React.useEffect(() => {
-    setMounted(true);
-    const stored = (typeof window !== "undefined" &&
-      window.localStorage.getItem("lang")) as LanguageCode | null;
-    const initial: LanguageCode = stored === "uz" || stored === "de" ? stored : "uz";
-    setLanguage(forcedLang ?? initial);
-  }, [forcedLang]);
-
-  const handleChange = (value: LanguageCode) => {
-    setLanguage(value);
-    try {
-      window.localStorage.setItem("lang", value);
-    } catch {}
-    onChangeLang?.(value);
-  };
-
-  if (!mounted) return null;
-
-  const labelMap: Record<LanguageCode, string> = { uz: "UZ", de: "DE" };
-  const fullMap: Record<LanguageCode, string> = { uz: "O'zbekcha", de: "Deutsch" };
-
+function LanguageToggle() {
+  const { lang, setLang, t } = useI18n();
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="Change language">
-          <Globe className="size-4" />
-          <span>{labelMap[language]}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuLabel>Til</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup
-          value={language}
-          onValueChange={(v) => handleChange(v as LanguageCode)}
+    <div role="group" aria-label={t("lang_switch")} className="flex border">
+      {LANGUAGES.map((code) => (
+        <button
+          key={code}
+          type="button"
+          lang={code}
+          aria-pressed={lang === code}
+          onClick={() => setLang(code)}
+          className={cn(
+            "label grid h-11 w-11 place-content-center transition-colors not-first:border-l",
+            lang === code ? "bg-foreground text-background" : "hover:bg-accent"
+          )}
         >
-          <DropdownMenuRadioItem value="uz">{fullMap.uz}</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="de">{fullMap.de}</DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {code}
+        </button>
+      ))}
+    </div>
   );
 }
-type IsActiveFn = (href: string) => boolean;
 
-function MobileMenu({
-  isActive,
-  t,
-  lang,
-  onChangeLang,
-}: {
-  isActive: IsActiveFn;
-  t: (k: string) => string;
-  lang: LanguageCode;
-  onChangeLang: (v: LanguageCode) => void;
-}) {
-  const items: Array<{ href: string; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-    { href: "/services/employers", label: t("nav_employers"), icon: Users },
-    { href: "/services/jobseekers", label: t("nav_jobseekers"), icon: Users },
-    { href: "/about/mission", label: t("nav_mission"), icon: Target },
-    { href: "/about/team", label: t("nav_team"), icon: Users },
-    { href: "/services/partners", label: t("nav_partners"), icon: Handshake },
-    { href: "/services/process", label: t("nav_process"), icon: Workflow },
-    { href: "/contact", label: t("nav_contact"), icon: Phone },
-  ];
+export default function Navbar() {
+  const { t } = useI18n();
+  const { open: openConsultation } = useConsultation();
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" aria-label="Open menu">
-          <Menu className="size-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="p-0">
-        <SheetHeader className="p-6 border-b">
-          <SheetTitle className="text-base font-medium">Menu</SheetTitle>
-        </SheetHeader>
+    <header className="sticky top-0 z-40 border-b bg-background">
+      <div className="container-x flex h-16 items-center justify-between gap-4">
+        <Logo />
 
-        <nav className="p-2" aria-label="Mobile Primary">
-          <ul className="px-1 space-y-1">
-            {items.map(({ href, label, icon: Icon }) => (
-              <li key={href}>
-                <SheetClose asChild>
-                  <Link
-                    href={href}
-                    className={cn(
-                      "flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm hover:bg-primary/10",
-                      isActive(href) && "bg-primary/10"
-                    )}
-                  >
-                    <Icon className="size-4" />
-                    <span>{label}</span>
-                  </Link>
-                </SheetClose>
+        <nav aria-label="Main" className="hidden lg:block">
+          <ul className="flex items-center gap-8">
+            {LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  aria-current={pathname === link.href ? "page" : undefined}
+                  className="label border-b-[3px] border-transparent py-1 transition-colors hover:border-foreground aria-[current=page]:border-accent"
+                >
+                  {t(link.key)}
+                </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        <div className="mt-auto p-4 border-t flex items-center gap-2">
-          <LanguageToggle forcedLang={lang} onChangeLang={onChangeLang} />
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:block">
+            <LanguageToggle />
+          </div>
+          <Button onClick={openConsultation} className="hidden sm:inline-flex">
+            {t("nav_cta")}
+            <ArrowRight aria-hidden />
+          </Button>
+
+          <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+            <Dialog.Trigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t("nav_menu")}
+                className="lg:hidden"
+              >
+                <Menu className="size-5" aria-hidden />
+              </Button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Content
+                aria-describedby={undefined}
+                className="data-[state=open]:animate-in data-[state=open]:fade-in-0 fixed inset-0 z-50 flex flex-col overflow-auto bg-background duration-150"
+              >
+                <div className="container-x flex h-16 shrink-0 items-center justify-between border-b">
+                  <Dialog.Title className="sr-only">{t("nav_menu")}</Dialog.Title>
+                  <Logo onClick={closeMenu} />
+                  <Dialog.Close asChild>
+                    <Button variant="outline" size="icon" aria-label={t("nav_close")}>
+                      <X className="size-5" aria-hidden />
+                    </Button>
+                  </Dialog.Close>
+                </div>
+                <nav aria-label="Main" className="container-x flex-1">
+                  <ul>
+                    {LINKS.map((link) => (
+                      <li key={link.href} className="border-b">
+                        <Link
+                          href={link.href}
+                          onClick={closeMenu}
+                          aria-current={pathname === link.href ? "page" : undefined}
+                          className="display flex items-center justify-between gap-4 py-5 text-[clamp(1.75rem,9vw,3.5rem)] aria-[current=page]:[&>span]:bg-accent"
+                        >
+                          <span className="px-1">{t(link.key)}</span>
+                          <ArrowRight className="size-6 shrink-0" aria-hidden />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+                <div className="container-x flex items-center gap-3 py-5">
+                  <LanguageToggle />
+                  <Button
+                    className="flex-1 justify-between"
+                    onClick={() => {
+                      closeMenu();
+                      openConsultation();
+                    }}
+                  >
+                    {t("nav_cta")}
+                    <ArrowRight aria-hidden />
+                  </Button>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </header>
   );
 }

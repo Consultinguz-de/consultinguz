@@ -1,55 +1,28 @@
-export const stats = [
-  { label: "Tajriba yillari", value: 5 },
-  { label: "Hamkorlar", value: 30 },
-  { label: "Joylashtirilganlar", value: 800 },
-  { label: "Qoniqish darajasi", value: 96, suffix: "%" },
+// Single source of truth for company facts. Used by the JSON-LD block, the
+// contact page, the footer and the legal pages — change them here only.
+export const COMPANY = {
+  name: "ConsultingUZ",
+  owner: "Orif Akhmadaliev",
+  phone: "+49 176 238 97 113",
+  email: "orif.ahmadaliyev@consultinguz.de",
+  street: "Alemannenweg 6",
+  postalCode: "72488",
+  city: "Sigmaringen",
+  country: "Deutschland",
+} as const;
+
+export const COMPANY_ADDRESS = `${COMPANY.street}, ${COMPANY.postalCode} ${COMPANY.city}, ${COMPANY.country}`;
+
+export const SOCIALS = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/consulting-uz-39b908297/" },
+  { label: "Telegram", href: "https://t.me/Consulting_UZB" },
+  { label: "Instagram", href: "https://www.instagram.com/consulting__uz/" },
+  { label: "YouTube", href: "https://www.youtube.com/@consultingUz1" },
 ] as const;
 
-export const partners = [
-  { name: "Adidas", logo: "/partners/adidas.svg" },
-  { name: "Allianz", logo: "/partners/allianz-2.svg" },
-  { name: "Bayer", logo: "/partners/bayer-5.svg" },
-  { name: "Bosch", logo: "/partners/bosch.svg" },
-  { name: "Hugo Boss", logo: "/partners/boss-hugo-boss-1.svg" },
-  { name: "Coca-Cola", logo: "/partners/coca-cola-2021.svg" },
-  { name: "Deutsche Telekom", logo: "/partners/deutsche-telekom-2.svg" },
-  { name: "Puma", logo: "/partners/puma.svg" },
-  { name: "Siemens", logo: "/partners/siemens.svg" },
+export const STATS = [
+  { value: "5+", key: "stat_years" },
+  { value: "30+", key: "stat_partners" },
+  { value: "800+", key: "stat_placed" },
+  { value: "96%", key: "stat_satisfaction" },
 ] as const;
-
-export const testimonials = [
-  {
-    role: "Ish beruvchi",
-    name: "M.M.",
-    text: "Tez va shaffof yollash jarayoni.",
-  },
-  {
-    role: "Ish izlovchi",
-    name: "D.A.",
-    text: "A'lo darajadagi viza va ko'chish yordami.",
-  },
-  {
-    role: "Ish beruvchi",
-    name: "S.T.",
-    text: "Professional muloqot va natijalar.",
-  },
-  {
-    role: "Ish izlovchi",
-    name: "N.K.",
-    text: "Jarayon juda tushunarli va qulay bo'ldi.",
-  },
-  {
-    role: "Ish beruvchi",
-    name: "A.R.",
-    text: "Nomzodlar sifati kutilganidan yuqori edi.",
-  },
-  {
-    role: "Ish izlovchi",
-    name: "J.B.",
-    text: "Hujjatlar bo'yicha to'liq ko'mak oldim.",
-  },
-] as const;
-
-export type Stat = (typeof stats)[number];
-export type Partner = (typeof partners)[number];
-export type Testimonial = (typeof testimonials)[number];
